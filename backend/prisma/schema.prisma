@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DayType {
+  NORMAL
+  SICK
+  TRIP
+  VACATION
+}
+
+enum PunchKind {
+  IN
+  OUT
+}
+
+model Day {
+  id       String  @id @default(cuid())
+  date     DateTime @unique
+  type     DayType @default(NORMAL)
+  telework Boolean @default(false)
+  punches  Punch[]
+}
+
+model Punch {
+  id        String    @id @default(cuid())
+  dayId     String
+  kind      PunchKind
+  timestamp DateTime
+  day       Day       @relation(fields: [dayId], references: [id], onDelete: Cascade)
+}
+
+model LedgerOperation {
+  id           String   @id @default(cuid())
+  date         DateTime
+  minutesDelta Int
+  reason       String
+  dayId        String?
+}

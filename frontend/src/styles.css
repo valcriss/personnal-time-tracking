@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: theme('fontFamily.body');
+}
+
+.card-panel {
+  @apply rounded-2xl border border-amber-100 bg-white/80 shadow-[0_20px_40px_-30px_rgba(0,0,0,0.45)];
+}
+
+.glow {
+  background: radial-gradient(circle at 20% 20%, rgba(255, 122, 69, 0.2), transparent 60%),
+    radial-gradient(circle at 90% 10%, rgba(140, 122, 100, 0.2), transparent 50%),
+    radial-gradient(circle at 40% 90%, rgba(255, 122, 69, 0.15), transparent 60%);
+}
+
+.stagger > * {
+  animation: rise 0.6s ease forwards;
+  opacity: 0;
+}
+
+.stagger > *:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.stagger > *:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.stagger > *:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.stagger > *:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

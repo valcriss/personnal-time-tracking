@@ -1,0 +1,10 @@
+{
+  "name": "personnal-time-tracking",
+  "private": true,
+  "workspaces": ["backend", "frontend"],
+  "scripts": {
+    "lint": "npm -w backend run lint && npm -w frontend run lint",
+    "test": "npm -w backend run test && npm -w frontend run test",
+    "build": "npm -w backend run build && npm -w frontend run build"
+  }
+}
