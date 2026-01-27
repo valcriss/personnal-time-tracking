@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useTimeStore } from "./store/timeStore";
 import AppHeader from "./components/AppHeader.vue";
 import TimesheetTable from "./components/TimesheetTable.vue";
@@ -52,6 +52,33 @@ const archiveSelected = async () => {
 const toggleArchived = () => {
   showArchived.value = !showArchived.value;
 };
+
+const isWeekend = (date: string) => {
+  const day = new Date(date).getDay();
+  return day === 0 || day === 6;
+};
+
+const filteredDays = computed(() => {
+  if (showArchived.value) {
+    return store.allDays;
+  }
+  const visibleDates = new Set(store.days.map((day) => day.date));
+  return store.days.filter((day) => {
+    if (!isWeekend(day.date)) {
+      return true;
+    }
+    const dayOfWeek = new Date(day.date).getDay();
+    const offsetToMonday = dayOfWeek === 6 ? 2 : 1;
+    const nextMonday = addDays(new Date(day.date), offsetToMonday);
+    for (let index = 0; index < 7; index += 1) {
+      const candidate = formatDate(addDays(nextMonday, index));
+      if (visibleDates.has(candidate)) {
+        return true;
+      }
+    }
+    return false;
+  });
+});
 
 const openImport = () => {
   importFile.value = null;
@@ -112,7 +139,7 @@ onMounted(() => {
         @toggle-archived="toggleArchived"
       />
       <TimesheetTable
-        :days="showArchived ? store.allDays : store.days"
+        :days="filteredDays"
         :selected-dates="selectedDates"
         @toggle-select="toggleSelect"
       />
