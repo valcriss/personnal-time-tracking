@@ -122,6 +122,68 @@ describe("App", () => {
     expect((table.props() as { days: unknown[] }).days).toHaveLength(2);
   });
 
+  it("keeps weekend when next week has visible weekday", async () => {
+    const store = useTimeStore();
+    store.days = [
+      { date: "2026-01-10", dayType: "NORMAL", telework: false, archived: false, segments: [], punches: [] },
+      { date: "2026-01-12", dayType: "NORMAL", telework: false, archived: false, segments: [], punches: [] }
+    ];
+
+    const wrapper = mount(App, {
+      global: {
+        stubs: {
+          AppHeader: AppHeaderStub,
+          TimesheetTable: TimesheetTableStub,
+          teleport: true
+        }
+      }
+    });
+
+    const table = wrapper.findComponent(TimesheetTableStub);
+    expect((table.props() as { days: unknown[] }).days).toHaveLength(2);
+  });
+
+  it("filters weekend when next week has no visible weekday", async () => {
+    const store = useTimeStore();
+    store.days = [
+      { date: "2026-01-10", dayType: "NORMAL", telework: false, archived: false, segments: [], punches: [] }
+    ];
+
+    const wrapper = mount(App, {
+      global: {
+        stubs: {
+          AppHeader: AppHeaderStub,
+          TimesheetTable: TimesheetTableStub,
+          teleport: true
+        }
+      }
+    });
+
+    const table = wrapper.findComponent(TimesheetTableStub);
+    expect((table.props() as { days: unknown[] }).days).toHaveLength(0);
+  });
+
+  it("uses sunday to monday offset for weekend filter", async () => {
+    const store = useTimeStore();
+    store.days = [
+      { date: "2026-01-11", dayType: "NORMAL", telework: false, archived: false, segments: [], punches: [] },
+      { date: "2026-01-12", dayType: "NORMAL", telework: false, archived: false, segments: [], punches: [] }
+    ];
+
+    const wrapper = mount(App, {
+      global: {
+        stubs: {
+          AppHeader: AppHeaderStub,
+          TimesheetTable: TimesheetTableStub,
+          teleport: true
+        }
+      }
+    });
+
+    const table = wrapper.findComponent(TimesheetTableStub);
+    expect((table.props() as { days: unknown[] }).days).toHaveLength(2);
+  });
+
   it("imports data from file", async () => {
     vi.mocked(apiPost).mockResolvedValue(undefined);
     const wrapper = mount(App, {
@@ -187,6 +249,47 @@ describe("App", () => {
     Object.defineProperty(input.element, "files", { value: [] });
     await input.trigger("change");
     await (wrapper.vm as any).importData();
+    expect(apiPost).not.toHaveBeenCalled();
+  });
+
+  it("clears import file when no file provided", async () => {
+    const wrapper = mount(App, {
+      global: {
+        stubs: {
+          AppHeader: AppHeaderStub,
+          TimesheetTable: TimesheetTableStub,
+          teleport: true
+        }
+      }
+    });
+
+    await wrapper.find("[data-test='import']").trigger("click");
+    await (wrapper.vm as any).handleFileChange({ target: {} });
+    await (wrapper.vm as any).importData();
+    expect(apiPost).not.toHaveBeenCalled();
+  });
+
+  it("keeps import loading reset on invalid JSON", async () => {
+    const wrapper = mount(App, {
+      global: {
+        stubs: {
+          AppHeader: AppHeaderStub,
+          TimesheetTable: TimesheetTableStub,
+          teleport: true
+        }
+      }
+    });
+
+    await wrapper.find("[data-test='import']").trigger("click");
+    const file = {
+      text: async () => "{bad json"
+    };
+    const input = wrapper.find("input[type='file']");
+    Object.defineProperty(input.element, "files", {
+      value: [file]
+    });
+    await input.trigger("change");
+    await expect((wrapper.vm as any).importData()).rejects.toThrow();
     expect(apiPost).not.toHaveBeenCalled();
   });
 
