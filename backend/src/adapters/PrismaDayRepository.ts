@@ -1,4 +1,5 @@
 import type { DayType, PunchKind } from "../domain/types.js";
+import type { Prisma } from "@prisma/client";
 import type { DayRepository, DayRecord } from "../repositories/DayRepository.js";
 import { dateToUtc, utcDateToDateString } from "../domain/dateUtils.js";
 import { prisma } from "../infra/prismaClient.js";
@@ -87,7 +88,7 @@ export class PrismaDayRepository implements DayRepository {
   }
 
   async replaceAllDays(records: DayRecord[]): Promise<void> {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.day.deleteMany();
       for (const record of records) {
         await tx.day.create({

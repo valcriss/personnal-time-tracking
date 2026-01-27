@@ -1,4 +1,5 @@
 import type { LedgerRepository, LedgerOperationRecord } from "../repositories/LedgerRepository.js";
+import type { Prisma } from "@prisma/client";
 import { dateToUtc, utcDateToDateString } from "../domain/dateUtils.js";
 import { prisma } from "../infra/prismaClient.js";
 
@@ -41,7 +42,7 @@ export class PrismaLedgerRepository implements LedgerRepository {
   }
 
   async replaceAllOperations(records: LedgerOperationRecord[]): Promise<void> {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.ledgerOperation.deleteMany();
       for (const record of records) {
         await tx.ledgerOperation.create({
