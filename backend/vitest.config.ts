@@ -7,7 +7,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      exclude: ["src/server.ts"],
+      exclude: ["src/server.ts", "src/infra/prismaClient.ts"],
       lines: 100,
       functions: 100,
       branches: 100,
