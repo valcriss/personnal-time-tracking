@@ -36,5 +36,3 @@ jobs:
           context: ./frontend
           push: true
           tags: ghcr.io/valcriss/personnal-time-tracking-frontend:latest
-          build-args: |
-            VITE_API_BASE_URL=http://times_backend:3000
