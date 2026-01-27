@@ -9,6 +9,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
   backend:
+    container_name: "times-backend"
     image: ghcr.io/valcriss/personnal-time-tracking-backend:latest
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/time_tracking
@@ -19,6 +20,7 @@ services:
       - "3000:3000"
   frontend:
     image: ghcr.io/valcriss/personnal-time-tracking-frontend:latest
+    container_name: "times-frontend"
     depends_on:
       - backend
     ports:
