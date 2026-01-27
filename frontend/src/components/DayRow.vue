@@ -286,13 +286,7 @@ if (isModalOpen.value) {
     v-if="isWeekend || isHoliday"
     class="border-b border-sky-100/60 bg-slate-100 text-muted"
   >
-    <td class="px-2 py-3">
-      <input
-        type="checkbox"
-        :checked="selected"
-        @change="emit('toggle-select', props.day.date, ($event.target as HTMLInputElement).checked)"
-      />
-    </td>
+    <td class="px-2 py-3"></td>
     <td class="px-4 py-3 font-medium">{{ formattedDate }}</td>
     <td class="px-4 py-3">
       <span

@@ -70,7 +70,7 @@ const filteredDays = computed(() => {
     const dayOfWeek = new Date(day.date).getDay();
     const offsetToMonday = dayOfWeek === 6 ? 2 : 1;
     const nextMonday = addDays(new Date(day.date), offsetToMonday);
-    for (let index = 0; index < 7; index += 1) {
+    for (let index = 0; index < 5; index += 1) {
       const candidate = formatDate(addDays(nextMonday, index));
       if (visibleDates.has(candidate)) {
         return true;
