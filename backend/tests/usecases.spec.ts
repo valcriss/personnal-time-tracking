@@ -11,6 +11,7 @@ describe("day usecases", () => {
       date: "2026-01-10",
       dayType: "NORMAL",
       telework: true,
+      archived: false,
       morningSegments: [{ start: "08:00", end: "10:00" }],
       afternoonSegments: [{ start: "13:00", end: "14:00" }]
     });
@@ -27,6 +28,7 @@ describe("day usecases", () => {
         date: "2026-01-11",
         dayType: "NORMAL",
         telework: false,
+        archived: false,
         punches: [
           { kind: "IN", timestamp: minutesToUtcDate("2026-01-11", 8 * 60) },
           { kind: "OUT", timestamp: minutesToUtcDate("2026-01-11", 12 * 60) }

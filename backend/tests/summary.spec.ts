@@ -17,12 +17,14 @@ describe("getSummary", () => {
         date: "2026-01-05",
         dayType: "NORMAL",
         telework: true,
+        archived: false,
         punches: []
       },
       {
         date: "2026-02-05",
         dayType: "NORMAL",
         telework: true,
+        archived: false,
         punches: []
       }
     ]);
@@ -40,6 +42,7 @@ describe("getSummary", () => {
         date: "2025-12-31",
         dayType: "NORMAL",
         telework: false,
+        archived: false,
         punches: [
           punch("2025-12-31", "07:00", "IN"),
           punch("2025-12-31", "12:00", "OUT"),
@@ -51,6 +54,7 @@ describe("getSummary", () => {
         date: "2026-01-01",
         dayType: "SICK",
         telework: false,
+        archived: false,
         punches: []
       }
     ]);
@@ -71,6 +75,7 @@ describe("getSummary", () => {
         date: "2026-06-30",
         dayType: "NORMAL",
         telework: false,
+        archived: false,
         punches: [
           punch("2026-06-30", "07:00", "IN"),
           punch("2026-06-30", "12:00", "OUT"),
@@ -82,6 +87,7 @@ describe("getSummary", () => {
         date: "2026-07-01",
         dayType: "SICK",
         telework: false,
+        archived: false,
         punches: []
       }
     ]);
@@ -102,12 +108,14 @@ describe("getSummary", () => {
         date: "2025-12-31",
         dayType: "NORMAL",
         telework: false,
+        archived: false,
         punches: []
       },
       {
         date: "2026-01-01",
         dayType: "SICK",
         telework: false,
+        archived: false,
         punches: []
       }
     ]);
@@ -135,6 +143,7 @@ describe("getSummary", () => {
         date: "2025-12-31",
         dayType: "NORMAL",
         telework: false,
+        archived: false,
         punches: [
           punch("2025-12-31", "07:00", "IN"),
           punch("2025-12-31", "12:00", "OUT"),

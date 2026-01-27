@@ -7,6 +7,7 @@ export type UpdateDayInput = {
   date: string;
   dayType: DayType;
   telework: boolean;
+  archived: boolean;
   morningSegments: { start: string; end: string }[];
   afternoonSegments: { start: string; end: string }[];
 };
@@ -30,6 +31,7 @@ export const updateDay = async (repo: DayRepository, input: UpdateDayInput) => {
     date: input.date,
     dayType: input.dayType,
     telework: input.telework,
+    archived: input.archived,
     punches
   });
 };

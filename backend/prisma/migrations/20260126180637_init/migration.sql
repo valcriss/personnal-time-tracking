@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "DayType" ADD VALUE 'HOLIDAY';

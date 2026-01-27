@@ -4,7 +4,15 @@ import { getDays } from "../usecases/getDays.js";
 import { updateDay } from "../usecases/updateDay.js";
 import type { DayRepository } from "../repositories/DayRepository.js";
 
-const dayTypeSchema = z.enum(["NORMAL", "SICK", "TRIP", "VACATION"]);
+const dayTypeSchema = z.enum([
+  "NORMAL",
+  "SICK",
+  "TRIP",
+  "VACATION",
+  "HOLIDAY",
+  "RTT",
+  "OTHER"
+]);
 
 const segmentSchema = z.object({
   start: z.string().regex(/^\d{2}:\d{2}$/),
@@ -14,6 +22,7 @@ const segmentSchema = z.object({
 const updateSchema = z.object({
   type: dayTypeSchema,
   telework: z.boolean(),
+  archived: z.boolean().optional(),
   morningSegments: z.array(segmentSchema),
   afternoonSegments: z.array(segmentSchema)
 });
@@ -46,6 +55,7 @@ export const createDaysController = (repo: DayRepository) => {
         date,
         dayType: body.type,
         telework: body.telework,
+        archived: body.archived ?? false,
         morningSegments: body.morningSegments,
         afternoonSegments: body.afternoonSegments
       });

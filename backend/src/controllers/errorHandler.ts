@@ -16,6 +16,7 @@ export const errorHandler = (
     return;
   }
 
+  console.error("Unexpected error:", error);
   res.status(500).json({
     code: "INTERNAL_ERROR",
     message: "Unexpected error"

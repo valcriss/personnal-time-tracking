@@ -72,9 +72,20 @@ const findFictiveLunch = (segments: Segment[]) => {
 };
 
 export const calcDay = (day: DayItem): DayResult => {
-  if (day.dayType !== "NORMAL") {
+  if (day.dayType === "TRIP") {
     return {
       creditMinutes: EXPECTED_MINUTES,
+      countedWorkMinutes: 0,
+      dayBalanceMinutes: 0,
+      warnings: [],
+      lunchStartMinutes: 0,
+      lunchEndMinutes: 0
+    };
+  }
+
+  if (day.dayType !== "NORMAL") {
+    return {
+      creditMinutes: 0,
       countedWorkMinutes: 0,
       dayBalanceMinutes: 0,
       warnings: [],
@@ -98,28 +109,37 @@ export const calcDay = (day: DayItem): DayResult => {
   const lunchPause = findLunchPause(segments);
   let lunchStart = 0;
   let lunchEnd = 0;
+  let lunchPenalty = 0;
 
-  if (!lunchPause || lunchPause.end - lunchPause.start < LUNCH_MINUTES) {
+  if (!lunchPause) {
     const fictive = findFictiveLunch(segments);
     lunchStart = fictive.start;
     lunchEnd = fictive.end;
+    lunchPenalty = LUNCH_MINUTES;
     warnings.push("lunchFictive");
   } else {
     lunchStart = lunchPause.start;
     lunchEnd = lunchPause.end;
+    if (lunchPause.end - lunchPause.start < LUNCH_MINUTES) {
+      lunchPenalty = LUNCH_MINUTES - (lunchPause.end - lunchPause.start);
+      warnings.push("lunchFictive");
+    }
   }
 
   const morningWorked = sumOverlap(segments, START_MINUTES, lunchStart);
   const afternoonWorked = sumOverlap(segments, lunchEnd, 24 * 60);
   const morningCapped = Math.min(morningWorked, MORNING_CAP);
   const afternoonCapped = Math.min(afternoonWorked, AFTERNOON_CAP);
-  let totalCapped = Math.min(morningCapped + afternoonCapped, TOTAL_CAP);
+  const totalAfterHalfDayCaps = morningCapped + afternoonCapped;
+  const totalAfterLunch = Math.max(0, totalAfterHalfDayCaps - lunchPenalty);
+  const totalCapped = Math.min(totalAfterLunch, TOTAL_CAP);
   if (morningCapped < morningWorked) warnings.push("morningCapped");
   if (afternoonCapped < afternoonWorked) warnings.push("afternoonCapped");
-  if (totalCapped < morningCapped + afternoonCapped) warnings.push("totalCapped");
+  if (totalCapped < totalAfterLunch) warnings.push("totalCapped");
 
   const countedWorkMinutes = totalCapped;
-  const creditMinutes = countedWorkMinutes + 5;
+  const bonusMinutes = countedWorkMinutes >= TOTAL_CAP ? 0 : 5;
+  const creditMinutes = countedWorkMinutes + bonusMinutes;
 
   return {
     creditMinutes,

@@ -7,11 +7,12 @@ export default {
         ink: "#0b0b10",
         paper: "#f5f1ea",
         accent: "#ff7a45",
-        muted: "#8c7a64"
+        muted: "#8c7a64",
+        "slate-150": "#e3e7ee"
       },
       fontFamily: {
-        display: ["'Alegreya'", "serif"],
-        body: ["'IBM Plex Sans'", "sans-serif"]
+        display: ["'Roboto'", "sans-serif"],
+        body: ["'Roboto'", "sans-serif"]
       }
     }
   },

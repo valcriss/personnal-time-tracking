@@ -76,6 +76,7 @@ describe("calcDay", () => {
     const result = calcDay(input);
     expect(result.warnings).toContain("totalCapped");
     expect(result.countedWorkMinutes).toBe(600);
+    expect(result.creditMinutes).toBe(600);
   });
 
   it("picks longest lunch pause overlapping window", () => {
@@ -97,7 +98,7 @@ describe("calcDay", () => {
       telework: false,
       segments: []
     });
-    expect(result.creditMinutes).toBe(468);
+    expect(result.creditMinutes).toBe(0);
     expect(result.dayBalanceMinutes).toBe(0);
   });
 
@@ -118,7 +119,7 @@ describe("calcDay", () => {
       telework: false,
       segments: []
     });
-    expect(result.creditMinutes).toBe(468);
+    expect(result.creditMinutes).toBe(0);
   });
 
   it("flags invalid segments and incomplete day", () => {
@@ -127,5 +128,16 @@ describe("calcDay", () => {
     );
     expect(result.warnings).toContain("invalidSegment");
     expect(result.warnings).toContain("incompleteDay");
+  });
+
+  it("uses default lunch when overlapping segments have no pause", () => {
+    const result = calcDay(
+      buildInput([
+        segment(minutes("07:00"), minutes("12:00")),
+        segment(minutes("12:00"), minutes("15:00")),
+        segment(minutes("13:00"), minutes("18:00"))
+      ])
+    );
+    expect(result.warnings).toContain("lunchFictive");
   });
 });

@@ -1,0 +1,1 @@
+ALTER TYPE "DayType" ADD VALUE 'OTHER';

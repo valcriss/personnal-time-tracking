@@ -1,4 +1,11 @@
-export type DayType = "NORMAL" | "SICK" | "TRIP" | "VACATION";
+export type DayType =
+  | "NORMAL"
+  | "SICK"
+  | "TRIP"
+  | "VACATION"
+  | "HOLIDAY"
+  | "RTT"
+  | "OTHER";
 
 export type PunchKind = "IN" | "OUT";
 

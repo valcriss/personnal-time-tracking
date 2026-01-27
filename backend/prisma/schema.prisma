@@ -12,6 +12,9 @@ enum DayType {
   SICK
   TRIP
   VACATION
+  HOLIDAY
+  RTT
+  OTHER
 }
 
 enum PunchKind {
@@ -24,6 +27,7 @@ model Day {
   date     DateTime @unique
   type     DayType @default(NORMAL)
   telework Boolean @default(false)
+  archived Boolean @default(false)
   punches  Punch[]
 }
 

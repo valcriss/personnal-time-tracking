@@ -28,6 +28,16 @@ describe("timecalc", () => {
       telework: false,
       segments: []
     });
+    expect(result.creditMinutes).toBe(0);
+  });
+
+  it("credits TRIP without bonus", () => {
+    const result = calcDay({
+      date: "2026-01-02",
+      dayType: "TRIP",
+      telework: false,
+      segments: []
+    });
     expect(result.creditMinutes).toBe(468);
   });
 
@@ -37,6 +47,7 @@ describe("timecalc", () => {
     );
     expect(result.warnings).toContain("lunchFictive");
     expect(result.warnings).toContain("totalCapped");
+    expect(result.creditMinutes).toBe(600);
   });
 
   it("caps morning and afternoon separately", () => {
@@ -53,6 +64,54 @@ describe("timecalc", () => {
   it("filters invalid segments", () => {
     const result = calcDay(buildDay([{ start: "09:00", end: "09:00" }]));
     expect(result.warnings).toContain("incompleteDay");
+  });
+
+  it("marks incomplete day when no segments", () => {
+    const result = calcDay(buildDay([]));
+    expect(result.warnings).toContain("incompleteDay");
+  });
+
+  it("applies lunch penalty when pause is too short", () => {
+    const result = calcDay(
+      buildDay([
+        { start: "08:00", end: "12:00" },
+        { start: "12:20", end: "16:00" }
+      ])
+    );
+    expect(result.warnings).toContain("lunchFictive");
+  });
+
+  it("accepts lunch pause when long enough", () => {
+    const result = calcDay(
+      buildDay([
+        { start: "08:00", end: "12:00" },
+        { start: "12:45", end: "16:00" }
+      ])
+    );
+    expect(result.warnings).not.toContain("lunchFictive");
+  });
+
+  it("uses fictive lunch when segments overlap without pause", () => {
+    const result = calcDay(
+      buildDay([
+        { start: "07:00", end: "12:00" },
+        { start: "12:00", end: "15:00" },
+        { start: "13:00", end: "18:00" }
+      ])
+    );
+    expect(result.warnings).toContain("lunchFictive");
+  });
+
+  it("picks the longest lunch pause", () => {
+    const result = calcDay(
+      buildDay([
+        { start: "07:30", end: "10:00" },
+        { start: "10:15", end: "12:00" },
+        { start: "12:45", end: "14:00" },
+        { start: "14:30", end: "17:00" }
+      ])
+    );
+    expect(result.warnings).not.toContain("lunchFictive");
   });
 
   it("splits segments across lunch", () => {

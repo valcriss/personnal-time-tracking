@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { errorHandler } from "../src/controllers/errorHandler.js";
 
 const buildRes = () => {
@@ -19,8 +19,10 @@ const buildRes = () => {
 describe("errorHandler", () => {
   it("returns internal error for unknown errors", () => {
     const res = buildRes();
-    errorHandler(new Error("boom"), {} as any, res, (() => {}) as any);
+    const next = vi.fn();
+    errorHandler(new Error("boom"), {} as any, res, next as any);
     expect(res.statusCode).toBe(500);
     expect(res.body.code).toBe("INTERNAL_ERROR");
+    expect(next).not.toHaveBeenCalled();
   });
 });

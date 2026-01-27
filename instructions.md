@@ -26,14 +26,22 @@
 - `SICK` (arrêt maladie)
 - `TRIP` (déplacement)
 - `VACATION` (congés)
+- `RTT` (congé RTT)
+- `OTHER` (autre congé)
 
 Effets :
-- Si type ∈ {SICK, TRIP, VACATION} :
-  - crédit compteur temps = **7h48** (468 min)
+- Si type ∈ {SICK, VACATION, RTT, OTHER} :
+  - crédit compteur temps = **0 min**
+  - solde du jour = **+00:00** (ne crédite pas, ne débite pas)
+  - pointages ignorés (UI désactivée/grisée)
+- Si type = TRIP :
+  - crédit compteur temps = **7h48** (468 min) **sans bonus**
+  - solde du jour = **+00:00**
   - pointages ignorés (UI désactivée/grisée)
 - Si type = NORMAL :
   - crédit compteur temps = minutes travaillées retenues + **5 min** (temps boot PC)
   - **Les 5 min ne comptent pas** pour les plafonds (matin/AM/total)
+  - **Bonus 5 min non appliqué si total (hors bonus) ≥ 10h**
 
 ### 1.2 Pointages (entrées/sorties)
 
@@ -72,7 +80,8 @@ Découpage matin/AM :
 
 ### 1.4 Solde
 
-- Solde du jour = (crédit du jour) - 7h48.
+- Pour `NORMAL` : solde du jour = (crédit du jour) - 7h48.
+- Pour `SICK`, `TRIP`, `VACATION`, `RTT`, `OTHER` : solde du jour = **0**.
 - Solde global = somme des soldes jour ± ajustements (purges) sur la période.
 
 ### 1.5 Purge des compteurs
@@ -114,6 +123,7 @@ Par ligne :
 Règles d’édition :
 - Aujourd’hui (dernière journée) est éditable directement.
 - Jours passés complets : lecture seule + bouton ✏️ pour édition inline.
+- Aucune saisie de date future : la date max affichée est aujourd’hui.
 
 Saisie segments :
 - `input type="time"`.
@@ -168,7 +178,7 @@ Tests :
 
 ### 4.1 Tables
 
-- `Day` : date unique, type, telework.
+- `Day` : date unique, type, telework, archived.
 - `Punch` : dayId, kind (IN/OUT), timestamp.
 - `LedgerOperation` : date, minutes delta (+/-), reason, dayId nullable.
 
@@ -187,7 +197,7 @@ Base URL : `/api`
 - `GET /api/days?from=YYYY-MM-DD&to=YYYY-MM-DD`
   - retourne days + punches
 - `PUT /api/days/:date`
-  - body : `{ type, telework, morningSegments[], afternoonSegments[] }`
+  - body : `{ type, telework, archived?, morningSegments[], afternoonSegments[] }`
   - côté backend : reconstruit les punches ordonnés (IN/OUT)
 
 ### 5.2 Computed
@@ -218,21 +228,23 @@ Sortie `DayResult` :
 - `afternoonCountedMinutes` (cap 360)
 - `lunchMinutesApplied` (réel ou 30)
 - `ignoredMinutes` (au-delà des plafonds)
-- `dayBalanceMinutes = creditMinutes - 468`
+- `dayBalanceMinutes = creditMinutes - 468` (si `NORMAL`, sinon 0)
 - `warnings[]`
 
 Étapes :
-1. Si dayType != NORMAL :
-   - `creditMinutes = 468`, `countedWorkMinutes = 0`, `warnings=[]`.
-2. Construire timeline travail à partir des segments (ou punches).
-3. Ajuster première entrée : `start = max(start, 07:00)`.
-4. Identifier pause déjeuner : plus longue pause OUT->IN chevauchant [11:30, 14:30].
+1. Si dayType = TRIP :
+   - `creditMinutes = 468`, `countedWorkMinutes = 0`, `dayBalanceMinutes = 0`, `warnings=[]`.
+2. Si dayType != NORMAL :
+   - `creditMinutes = 0`, `countedWorkMinutes = 0`, `dayBalanceMinutes = 0`, `warnings=[]`.
+3. Construire timeline travail à partir des segments (ou punches).
+4. Ajuster première entrée : `start = max(start, 07:00)`.
+5. Identifier pause déjeuner : plus longue pause OUT->IN chevauchant [11:30, 14:30].
    - Si absente ou < 30 : pause fictive 30 appliquée (voir placement).
-5. Calculer minutes travaillées avant/après pause.
-6. Appliquer caps : matin max 360, AM max 360.
-7. Total = min(matin+AM, 600).
-8. `creditMinutes = total + 5`.
-9. Produire warnings si :
+6. Calculer minutes travaillées avant/après pause.
+7. Appliquer caps : matin max 360, AM max 360.
+8. Total = min(matin+AM, 600).
+9. `creditMinutes = total + 5` si `total < 600`, sinon `creditMinutes = total`.
+10. Produire warnings si :
    - pause fictive
    - caps appliqués
    - début ramené à 07:00
@@ -250,9 +262,11 @@ Créer une suite de tests qui couvre 100% et inclut au minimum :
 5. NORMAL : AM travaillé 7h → cap AM à 6h.
 6. NORMAL : total travaillé 12h → cap total à 10h.
 7. NORMAL : multiple absences (plusieurs segments) + pause déjeuner identifiée comme la plus longue.
-8. SICK : crédit 7h48 sans segments.
-9. TRIP : crédit 7h48.
-10. VACATION : crédit 7h48.
+8. SICK : crédit 0 sans segments.
+9. TRIP : crédit 7h48 sans bonus.
+10. VACATION : crédit 0.
+11. RTT : crédit 0.
+12. OTHER : crédit 0.
 11. Télétravail : compteur annuel incrémenté.
 12. Purge 01/01 : solde positif remis à 0.
 13. Purge 01/07 : solde positif remis à 0.

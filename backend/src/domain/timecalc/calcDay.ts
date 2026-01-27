@@ -102,20 +102,30 @@ const findFictiveLunch = (segments: TimeSegment[]) => {
 const applyCaps = (morning: number, afternoon: number) => {
   const morningCapped = Math.min(morning, MORNING_CAP);
   const afternoonCapped = Math.min(afternoon, AFTERNOON_CAP);
-  const totalCapped = Math.min(morningCapped + afternoonCapped, TOTAL_CAP);
-  const afternoonAfterTotal = Math.min(afternoonCapped, Math.max(0, TOTAL_CAP - morningCapped));
   return {
     morningCapped,
-    afternoonCapped: afternoonAfterTotal,
-    totalCapped,
+    afternoonCapped,
     totalRaw: morning + afternoon
   };
 };
 
 export const calcDay = (input: DayInput): DayResult => {
-  if (input.dayType !== "NORMAL") {
+  if (input.dayType === "TRIP") {
     return {
       creditMinutes: EXPECTED_MINUTES,
+      countedWorkMinutes: 0,
+      morningCountedMinutes: 0,
+      afternoonCountedMinutes: 0,
+      lunchMinutesApplied: 0,
+      ignoredMinutes: 0,
+      dayBalanceMinutes: 0,
+      warnings: []
+    };
+  }
+
+  if (input.dayType !== "NORMAL") {
+    return {
+      creditMinutes: 0,
       countedWorkMinutes: 0,
       morningCountedMinutes: 0,
       afternoonCountedMinutes: 0,
@@ -144,17 +154,24 @@ export const calcDay = (input: DayInput): DayResult => {
   let lunchStart = 0;
   let lunchEnd = 0;
   let lunchMinutes = 0;
+  let lunchPenalty = 0;
 
-  if (!lunchPause || lunchPause.end - lunchPause.start < LUNCH_MINUTES) {
+  if (!lunchPause) {
     const fictive = findFictiveLunch(segments);
     lunchStart = clamp(fictive.start, LUNCH_START, LUNCH_END);
     lunchEnd = clamp(fictive.end, LUNCH_START, LUNCH_END);
     lunchMinutes = LUNCH_MINUTES;
+    lunchPenalty = LUNCH_MINUTES;
     warnings.push("lunchFictive");
   } else {
     lunchStart = lunchPause.start;
     lunchEnd = lunchPause.end;
     lunchMinutes = lunchPause.end - lunchPause.start;
+    if (lunchMinutes < LUNCH_MINUTES) {
+      lunchPenalty = LUNCH_MINUTES - lunchMinutes;
+      lunchMinutes = LUNCH_MINUTES;
+      warnings.push("lunchFictive");
+    }
   }
 
   const morningWorked = sumOverlap(segments, START_MINUTES, lunchStart);
@@ -167,13 +184,20 @@ export const calcDay = (input: DayInput): DayResult => {
   if (caps.afternoonCapped < afternoonWorked) {
     warnings.push("afternoonCapped");
   }
-  if (caps.totalCapped < caps.morningCapped + caps.afternoonCapped) {
+
+  const totalAfterHalfDayCaps = caps.morningCapped + caps.afternoonCapped;
+  const totalAfterLunch = Math.max(0, totalAfterHalfDayCaps - lunchPenalty);
+  const totalCapped = Math.min(totalAfterLunch, TOTAL_CAP);
+  if (totalCapped < totalAfterLunch) {
     warnings.push("totalCapped");
   }
 
-  const countedWorkMinutes = caps.totalCapped;
-  const creditMinutes = countedWorkMinutes + 5;
-  const ignoredMinutes = Math.max(0, caps.totalRaw - countedWorkMinutes);
+  const countedWorkMinutes = totalCapped;
+  const bonusMinutes = countedWorkMinutes >= TOTAL_CAP ? 0 : 5;
+  const creditMinutes = countedWorkMinutes + bonusMinutes;
+  const ignoredMinutes =
+    Math.max(0, caps.totalRaw - totalAfterHalfDayCaps) +
+    Math.max(0, totalAfterLunch - totalCapped);
 
   return {
     creditMinutes,

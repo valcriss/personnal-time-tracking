@@ -13,9 +13,6 @@ const buildDayInput = (day: DayRecord): DayInput => ({
   segments: punchesToSegments(day.punches)
 });
 
-const sumOperations = (operations: LedgerOperationRecord[]) =>
-  operations.reduce((total, op) => total + op.minutesDelta, 0);
-
 export const getSummary = async (
   dayRepo: DayRepository,
   ledgerRepo: LedgerRepository,

@@ -10,3 +10,8 @@ export const addDays = (date: Date, delta: number) => {
   next.setDate(next.getDate() + delta);
   return next;
 };
+
+export const parseDate = (value: string) => {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
