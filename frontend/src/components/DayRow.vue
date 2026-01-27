@@ -288,7 +288,7 @@ if (isModalOpen.value) {
   >
     <td class="px-2 py-3"></td>
     <td class="px-4 py-3 font-medium">{{ formattedDate }}</td>
-    <td class="px-4 py-3">
+    <td class="px-4 py-3 text-center">
       <span
         v-if="isHoliday"
         class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700"
@@ -296,11 +296,11 @@ if (isModalOpen.value) {
         F&eacute;ri&eacute;
       </span>
     </td>
-    <td class="px-4 py-3"></td>
-    <td class="px-4 py-3"></td>
-    <td class="px-4 py-3"></td>
-    <td class="px-4 py-3"></td>
-    <td class="px-4 py-3"></td>
+    <td class="px-4 py-3 text-center"></td>
+    <td class="px-4 py-3 text-center"></td>
+    <td class="px-4 py-3 text-center"></td>
+    <td class="px-4 py-3 text-center"></td>
+    <td class="px-4 py-3 text-center"></td>
   </tr>
   <tr
     v-else
@@ -323,7 +323,7 @@ if (isModalOpen.value) {
       />
     </td>
     <td class="px-4 py-3 font-medium">{{ formattedDate }}</td>
-    <td class="px-4 py-3">
+    <td class="px-4 py-3 text-center">
       <span
         v-if="dayType !== 'NORMAL'"
         class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]"
@@ -332,7 +332,7 @@ if (isModalOpen.value) {
         {{ dayTypeLabel }}
       </span>
     </td>
-    <td class="px-4 py-3">
+    <td class="px-4 py-3 text-center">
       <span v-if="telework" class="inline-flex items-center text-emerald-900" aria-label="Teletravail">
         <svg
           class="h-5 w-5"
@@ -349,18 +349,18 @@ if (isModalOpen.value) {
         </svg>
       </span>
     </td>
-    <td class="px-4 py-3">
+    <td class="px-4 py-3 text-center">
       <span class="text-sm text-muted">{{
         hasCompleteSegments ? formatDuration(morningTotalMinutes) : ""
       }}</span>
     </td>
-    <td class="px-4 py-3">
+    <td class="px-4 py-3 text-center">
       <span class="text-sm text-muted">{{
         hasCompleteSegments ? formatDuration(afternoonTotalMinutes) : ""
       }}</span>
     </td>
     <td
-      class="px-4 py-3 font-semibold"
+      class="px-4 py-3 text-center font-semibold"
       :class="
         hasCompleteSegments
           ? displayedMinutes >= 0
@@ -379,7 +379,7 @@ if (isModalOpen.value) {
             : ""
       }}
     </td>
-    <td class="px-4 py-3">
+    <td class="px-4 py-3 text-center">
       <button
         class="rounded-full border border-sky-200 px-3 py-1 text-xs uppercase tracking-[0.2em]"
         :disabled="!canOpenModal"

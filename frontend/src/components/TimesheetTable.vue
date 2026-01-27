@@ -21,12 +21,12 @@ const emit = defineEmits<{
           <tr>
             <th class="w-10 px-2 py-3"></th>
             <th class="px-4 py-3">Date</th>
-            <th class="px-4 py-3">Type</th>
-            <th class="px-4 py-3">Télétravail</th>
-            <th class="px-4 py-3">Matin</th>
-            <th class="px-4 py-3">Après-midi</th>
-            <th class="px-4 py-3">Solde</th>
-            <th class="px-4 py-3">Actions</th>
+            <th class="px-4 py-3 text-center">Type</th>
+            <th class="px-4 py-3 text-center">Télétravail</th>
+            <th class="px-4 py-3 text-center">Matin</th>
+            <th class="px-4 py-3 text-center">Après-midi</th>
+            <th class="px-4 py-3 text-center">Solde</th>
+            <th class="px-4 py-3 text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
