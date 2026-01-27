@@ -206,7 +206,7 @@ describe("components", () => {
     expect(store.updateDay).toHaveBeenCalled();
   });
 
-  it("renders weekend row and emits selection", async () => {
+  it("renders weekend row without selection", () => {
     const store = createStore();
     const day = {
       date: "2026-01-10",
@@ -218,8 +218,7 @@ describe("components", () => {
     };
     store.days = [day];
     const wrapper = mount(DayRow, { props: { day, selected: false } });
-    await wrapper.find("input[type='checkbox']").setValue(true);
-    expect(wrapper.emitted("toggle-select")?.[0]).toEqual(["2026-01-10", true]);
+    expect(wrapper.find("input[type='checkbox']").exists()).toBe(false);
     expect(wrapper.text()).toContain("Sa");
   });
 
