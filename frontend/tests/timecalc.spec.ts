@@ -114,6 +114,12 @@ describe("timecalc", () => {
     expect(result.warnings).not.toContain("lunchFictive");
   });
 
+  it("does not apply lunch penalty when no work before noon", () => {
+    const result = calcDay(buildDay([{ start: "13:00", end: "16:00" }]));
+    expect(result.countedWorkMinutes).toBe(180);
+    expect(result.warnings).not.toContain("lunchFictive");
+  });
+
   it("splits segments across lunch", () => {
     const split = splitSegmentsByLunch(
       [{ start: "11:00", end: "13:30" }],

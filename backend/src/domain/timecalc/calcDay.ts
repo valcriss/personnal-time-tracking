@@ -3,6 +3,7 @@ import type { DayInput, DayResult, TimeSegment } from "../types.js";
 const MINUTES_PER_DAY = 24 * 60;
 const EXPECTED_MINUTES = 468;
 const START_MINUTES = 7 * 60;
+const NOON_MINUTES = 12 * 60;
 const LUNCH_START = 11 * 60 + 30;
 const LUNCH_END = 14 * 60 + 30;
 const LUNCH_MINUTES = 30;
@@ -22,6 +23,9 @@ const hasWorkBefore = (segments: TimeSegment[], minute: number) =>
 
 const hasWorkAfter = (segments: TimeSegment[], minute: number) =>
   segments.some((segment) => segment.startMinutes >= minute && segment.startMinutes < MINUTES_PER_DAY);
+
+const hasWorkBeforeNoon = (segments: TimeSegment[]) =>
+  segments.some((segment) => segment.startMinutes < NOON_MINUTES && segment.endMinutes > 0);
 
 const overlaps = (start: number, end: number, windowStart: number, windowEnd: number) =>
   start < windowEnd && end > windowStart;
@@ -150,27 +154,32 @@ export const calcDay = (input: DayInput): DayResult => {
   }
 
   const segments = adjusted.segments;
-  const lunchPause = findLunchPause(segments);
   let lunchStart = 0;
   let lunchEnd = 0;
   let lunchMinutes = 0;
   let lunchPenalty = 0;
 
-  if (!lunchPause) {
-    const fictive = findFictiveLunch(segments);
-    lunchStart = clamp(fictive.start, LUNCH_START, LUNCH_END);
-    lunchEnd = clamp(fictive.end, LUNCH_START, LUNCH_END);
-    lunchMinutes = LUNCH_MINUTES;
-    lunchPenalty = LUNCH_MINUTES;
-    warnings.push("lunchFictive");
+  if (!hasWorkBeforeNoon(segments)) {
+    lunchStart = NOON_MINUTES;
+    lunchEnd = NOON_MINUTES;
   } else {
-    lunchStart = lunchPause.start;
-    lunchEnd = lunchPause.end;
-    lunchMinutes = lunchPause.end - lunchPause.start;
-    if (lunchMinutes < LUNCH_MINUTES) {
-      lunchPenalty = LUNCH_MINUTES - lunchMinutes;
+    const lunchPause = findLunchPause(segments);
+    if (!lunchPause) {
+      const fictive = findFictiveLunch(segments);
+      lunchStart = clamp(fictive.start, LUNCH_START, LUNCH_END);
+      lunchEnd = clamp(fictive.end, LUNCH_START, LUNCH_END);
       lunchMinutes = LUNCH_MINUTES;
+      lunchPenalty = LUNCH_MINUTES;
       warnings.push("lunchFictive");
+    } else {
+      lunchStart = lunchPause.start;
+      lunchEnd = lunchPause.end;
+      lunchMinutes = lunchPause.end - lunchPause.start;
+      if (lunchMinutes < LUNCH_MINUTES) {
+        lunchPenalty = LUNCH_MINUTES - lunchMinutes;
+        lunchMinutes = LUNCH_MINUTES;
+        warnings.push("lunchFictive");
+      }
     }
   }
 
