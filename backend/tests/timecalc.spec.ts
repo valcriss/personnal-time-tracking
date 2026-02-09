@@ -140,4 +140,11 @@ describe("calcDay", () => {
     );
     expect(result.warnings).toContain("lunchFictive");
   });
+
+  it("skips lunch penalty when no work before noon", () => {
+    const result = calcDay(buildInput([segment(minutes("13:00"), minutes("16:00"))]));
+    expect(result.countedWorkMinutes).toBe(180);
+    expect(result.lunchMinutesApplied).toBe(0);
+    expect(result.warnings).not.toContain("lunchFictive");
+  });
 });

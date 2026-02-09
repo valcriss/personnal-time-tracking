@@ -2,6 +2,7 @@ import type { DayItem, DayResult, Segment } from "./types";
 
 const EXPECTED_MINUTES = 468;
 const START_MINUTES = 7 * 60;
+const NOON_MINUTES = 12 * 60;
 const LUNCH_START = 11 * 60 + 30;
 const LUNCH_END = 14 * 60 + 30;
 const LUNCH_MINUTES = 30;
@@ -38,6 +39,9 @@ const hasWorkBefore = (segments: Segment[], minute: number) =>
 
 const hasWorkAfter = (segments: Segment[], minute: number) =>
   segments.some((segment) => toMinutes(segment.start) >= minute);
+
+const hasWorkBeforeNoon = (segments: Segment[]) =>
+  segments.some((segment) => toMinutes(segment.start) < NOON_MINUTES);
 
 const findLunchPause = (segments: Segment[]) => {
   let best: { start: number; end: number } | null = null;
@@ -106,23 +110,28 @@ export const calcDay = (day: DayItem): DayResult => {
     warnings.push("startAdjusted");
   }
 
-  const lunchPause = findLunchPause(segments);
   let lunchStart = 0;
   let lunchEnd = 0;
   let lunchPenalty = 0;
 
-  if (!lunchPause) {
-    const fictive = findFictiveLunch(segments);
-    lunchStart = fictive.start;
-    lunchEnd = fictive.end;
-    lunchPenalty = LUNCH_MINUTES;
-    warnings.push("lunchFictive");
+  if (!hasWorkBeforeNoon(segments)) {
+    lunchStart = NOON_MINUTES;
+    lunchEnd = NOON_MINUTES;
   } else {
-    lunchStart = lunchPause.start;
-    lunchEnd = lunchPause.end;
-    if (lunchPause.end - lunchPause.start < LUNCH_MINUTES) {
-      lunchPenalty = LUNCH_MINUTES - (lunchPause.end - lunchPause.start);
+    const lunchPause = findLunchPause(segments);
+    if (!lunchPause) {
+      const fictive = findFictiveLunch(segments);
+      lunchStart = fictive.start;
+      lunchEnd = fictive.end;
+      lunchPenalty = LUNCH_MINUTES;
       warnings.push("lunchFictive");
+    } else {
+      lunchStart = lunchPause.start;
+      lunchEnd = lunchPause.end;
+      if (lunchPause.end - lunchPause.start < LUNCH_MINUTES) {
+        lunchPenalty = LUNCH_MINUTES - (lunchPause.end - lunchPause.start);
+        warnings.push("lunchFictive");
+      }
     }
   }
 

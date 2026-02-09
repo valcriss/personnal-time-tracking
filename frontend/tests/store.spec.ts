@@ -4,6 +4,8 @@ import { useTimeStore } from "../src/store/timeStore";
 
 describe("time store", () => {
   it("loads days", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-27T10:00:00.000Z"));
     setActivePinia(createPinia());
     const store = useTimeStore();
     globalThis.fetch = vi.fn().mockResolvedValue({
@@ -14,8 +16,9 @@ describe("time store", () => {
     await store.loadDays("2026-01-01", "2026-01-31");
     expect(store.days).toHaveLength(27);
     expect(store.loading).toBe(false);
-    expect(store.todayWarnings).toEqual(["incompleteDay", "lunchFictive"]);
+    expect(store.todayWarnings).toEqual(["incompleteDay"]);
     expect(store.dayBalances["2026-01-10"]).toBeLessThan(0);
+    vi.useRealTimers();
   });
 
   it("returns empty warnings when no days", () => {
