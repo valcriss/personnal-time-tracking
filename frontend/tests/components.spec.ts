@@ -225,7 +225,7 @@ describe("components", () => {
   it("renders holiday row label", () => {
     const store = createStore();
     const day = {
-      date: "2026-01-06",
+      date: "2026-01-01",
       dayType: "HOLIDAY",
       telework: false,
       archived: false,
@@ -235,6 +235,31 @@ describe("components", () => {
     store.days = [day];
     const wrapper = mount(DayRow, { props: { day, selected: false } });
     expect(wrapper.text()).toContain("Férié");
+  });
+
+  it("allows editing for manual HOLIDAY day", async () => {
+    const store = createStore();
+    const day = {
+      date: "2026-01-06",
+      dayType: "HOLIDAY",
+      telework: false,
+      archived: false,
+      segments: [],
+      punches: []
+    };
+    store.days = [day];
+    const wrapper = mount(DayRow, {
+      props: { day, selected: false },
+      global: {
+        stubs: {
+          teleport: true
+        }
+      }
+    });
+    const editButton = wrapper.find("button");
+    expect(editButton.attributes("disabled")).toBeUndefined();
+    await editButton.trigger("click");
+    expect(wrapper.text()).toContain("Saisie des periodes");
   });
 
   it("shows telework icon and positive balance", () => {

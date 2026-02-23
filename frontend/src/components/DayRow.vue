@@ -4,6 +4,7 @@ import { useTimeStore } from "../store/timeStore";
 import type { DayItem, Segment } from "../domain/types";
 import { calcDay, splitSegmentsByLunch } from "../domain/timecalc";
 import { parseDate } from "../utils/date";
+import { getFrenchHolidays } from "../utils/holidays";
 import SegmentsEditor from "./SegmentsEditor.vue";
 
 const props = defineProps<{ day: DayItem; selected: boolean }>();
@@ -24,7 +25,13 @@ const isWeekend = computed(() => {
   const day = date.getDay();
   return day === 0 || day === 6;
 });
-const isHoliday = computed(() => dayType.value === "HOLIDAY");
+const isSystemHoliday = computed(() => {
+  if (dayType.value !== "HOLIDAY") {
+    return false;
+  }
+  const date = parseDate(props.day.date);
+  return getFrenchHolidays(date.getFullYear()).has(props.day.date);
+});
 
 const dayTypeLabel = computed(() => {
   switch (dayType.value) {
@@ -97,9 +104,9 @@ const formattedDate = computed(() => {
 });
 
 const isAutoEditable = computed(
-  () => !isWeekend.value && !isHoliday.value && (isToday.value || !isComplete.value)
+  () => !isWeekend.value && !isSystemHoliday.value && (isToday.value || !isComplete.value)
 );
-const canOpenModal = computed(() => !isWeekend.value && !isHoliday.value);
+const canOpenModal = computed(() => !isWeekend.value && !isSystemHoliday.value);
 
 const morningSegments = ref<Segment[]>([]);
 const afternoonSegments = ref<Segment[]>([]);
@@ -283,14 +290,14 @@ if (isModalOpen.value) {
 
 <template>
   <tr
-    v-if="isWeekend || isHoliday"
+    v-if="isWeekend || isSystemHoliday"
     class="border-b border-sky-100/60 bg-slate-100 text-muted"
   >
     <td class="px-2 py-3"></td>
     <td class="px-4 py-3 font-medium">{{ formattedDate }}</td>
     <td class="px-4 py-3 text-center">
       <span
-        v-if="isHoliday"
+        v-if="isSystemHoliday"
         class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700"
       >
         F&eacute;ri&eacute;
@@ -419,13 +426,13 @@ if (isModalOpen.value) {
             v-model="dayType"
             class="rounded-lg border border-sky-200 bg-white/70 px-2 py-1 text-sm text-ink"
           >
-            <option value="NORMAL">NORMAL</option>
-            <option value="SICK">SICK</option>
-            <option value="TRIP">TRIP</option>
-            <option value="VACATION">VACATION</option>
-            <option value="HOLIDAY">HOLIDAY</option>
+            <option value="NORMAL">Normal</option>
+            <option value="SICK">Maladie</option>
+            <option value="TRIP">Déplacement</option>
+            <option value="VACATION">Congé</option>
+            <option value="HOLIDAY">Férié</option>
             <option value="RTT">RTT</option>
-            <option value="OTHER">OTHER</option>
+            <option value="OTHER">Autre</option>
           </select>
         </label>
         <label class="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted">
